@@ -37,6 +37,8 @@ def test_is_safe_rejects_row_column_and_box_conflicts():
     assert not sudoku_logic.is_safe(board, 1, 1, 1)
     assert sudoku_logic.is_safe(board, 1, 1, 2)
 
+# Copilot initially suggested a box-conflict test with cells from different 3x3 boxes.
+# I evaluated the suggestion and corrected the test data to use cells in the same box.
 
 def test_is_valid_move_rejects_row_column_and_box_conflicts():
     board = sudoku_logic.create_empty_board()
