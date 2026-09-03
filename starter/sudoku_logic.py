@@ -24,6 +24,84 @@ def is_safe(board, row, col, num):
                 return False
     return True
 
+
+def is_valid_move(board, row, col, num):
+    """Return whether ``num`` can be placed at an otherwise empty cell."""
+    if not 0 <= row < SIZE or not 0 <= col < SIZE or not 1 <= num <= SIZE:
+        return False
+    if board[row][col] != EMPTY:
+        return False
+    board_without_cell = deep_copy(board)
+    board_without_cell[row][col] = EMPTY
+    return is_safe(board_without_cell, row, col, num)
+
+
+def is_complete(board, solution):
+    """Return whether every cell in a board matches the expected solution."""
+    return all(
+        board[row][col] == solution[row][col]
+        for row in range(SIZE)
+        for col in range(SIZE)
+    )
+
+
+def count_solutions(board, limit=2):
+    """Return the number of solutions found, stopping once ``limit`` is reached."""
+    if limit < 1:
+        return 0
+    working_board = deep_copy(board)
+    solution_count = 0
+
+    for row in range(SIZE):
+        for col in range(SIZE):
+            value = working_board[row][col]
+            if value == EMPTY:
+                continue
+            if not 1 <= value <= SIZE:
+                return 0
+            working_board[row][col] = EMPTY
+            if not is_safe(working_board, row, col, value):
+                return 0
+            working_board[row][col] = value
+
+    def search():
+        nonlocal solution_count
+        if solution_count >= limit:
+            return
+
+        best_cell = None
+        best_candidates = None
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if working_board[row][col] != EMPTY:
+                    continue
+                candidates = [
+                    number
+                    for number in range(1, SIZE + 1)
+                    if is_safe(working_board, row, col, number)
+                ]
+                if not candidates:
+                    return
+                if best_candidates is None or len(candidates) < len(best_candidates):
+                    best_cell = (row, col)
+                    best_candidates = candidates
+
+        if best_cell is None:
+            solution_count += 1
+            return
+
+        row, col = best_cell
+        for candidate in best_candidates:
+            working_board[row][col] = candidate
+            search()
+            working_board[row][col] = EMPTY
+            if solution_count >= limit:
+                return
+
+    search()
+    return solution_count
+
+
 def fill_board(board):
     for row in range(SIZE):
         for col in range(SIZE):
@@ -40,18 +118,26 @@ def fill_board(board):
     return True
 
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
+    cells = [(row, col) for row in range(SIZE) for col in range(SIZE)]
+    random.shuffle(cells)
+    for row, col in cells:
+        if sum(cell != EMPTY for current_row in board for cell in current_row) <= clues:
+            break
+        value = board[row][col]
+        if value == EMPTY:
+            continue
+        board[row][col] = EMPTY
+        if count_solutions(board) != 1:
+            board[row][col] = value
 
 def generate_puzzle(clues=35):
-    board = create_empty_board()
-    fill_board(board)
-    solution = deep_copy(board)
-    remove_cells(board, clues)
-    puzzle = deep_copy(board)
-    return puzzle, solution
+    if not 0 < clues <= SIZE * SIZE:
+        raise ValueError('clues must be between 1 and 81')
+
+    while True:
+        solution = create_empty_board()
+        fill_board(solution)
+        puzzle = deep_copy(solution)
+        remove_cells(puzzle, clues)
+        if sum(cell != EMPTY for row in puzzle for cell in row) == clues:
+            return puzzle, solution

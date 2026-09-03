@@ -1,17 +1,15 @@
-# Refactor a Sudoku Game written in Python Flask
+# Flask Sudoku Game
 
-Use this simple Sudoku game as a starting point to practice your skills with GitHub Copilot. The goal is to refactor the code to use modern technologies, while also adding new features and improving the overall user experience.
+This project is a Flask-based Sudoku game. It generates puzzles with unique solutions, lets players choose a difficulty, validates entries as they are made, and provides hints and solution checking in the browser.
 
 ## Getting Started
 
 Follow these instructions to get a copy of the project up and running on your local machine.
 
-### Dependencies
+### Prerequisites
 
-```
-- Modern web browser (Chrome, Firefox, Edge, etc.)
-- Python 3
-```
+- Python 3.13 or later
+- A modern web browser such as Chrome, Edge, or Firefox
 
 ### Installation
 
@@ -19,28 +17,53 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 2. Clone your forked repository to your local machine.
 
-3. Open a terminal window and navigate to the "github-copilot-python/starter" directory.
+3. Open PowerShell and navigate to the `starter` directory.
 
-4. Create a Python virtual environment and activate it (optional but highly recommended).
+4. Create and activate a Python virtual environment on Windows:
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell script execution is restricted, activate the environment from Command Prompt instead:
+
+```bat
+.venv\Scripts\activate.bat
 ```
 
 5. Install required Python packages.
 
-```bash
-pip install -r requirements.txt
+```powershell
+py -m pip install -r requirements.txt
 ```
 
 6. Run the Flask app.
 
-```bash
-python app.py
+```powershell
+py app.py
 ```
 
-7. Open http://127.0.0.1:5000 in your browser.
+7. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+### Run Tests
+
+From the `starter` directory, run the full pytest suite:
+
+```powershell
+py -m pytest
+```
+
+## Implemented Features
+
+- Unique-solution Sudoku puzzle generation.
+- Easy, Medium, and Hard difficulty levels with different clue counts.
+- Locked prefilled cells and immediate row, column, and 3x3 box conflict validation.
+- Hints that fill and lock one correct cell at a time.
+- Check functionality that identifies incorrect entries without overwriting them.
+- Solve timer that starts with each puzzle and stops on exact completion.
+- Completion message and browser-local Top 10 scoreboard, sorted by fastest time.
+- Persistent light/dark theme selection, alternating 3x3 box styling, and responsive desktop/mobile layout.
 
 ## Project Instructions
 

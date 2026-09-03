@@ -9,13 +9,26 @@ CURRENT = {
     'solution': None
 }
 
+DIFFICULTY_CLUES = {
+    'easy': 45,
+    'medium': 35,
+    'hard': 30,
+}
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/new')
 def new_game():
-    clues = int(request.args.get('clues', 35))
+    difficulty = request.args.get('difficulty')
+    if difficulty is not None:
+        difficulty = difficulty.lower()
+        if difficulty not in DIFFICULTY_CLUES:
+            return jsonify({'error': 'Invalid difficulty'}), 400
+        clues = DIFFICULTY_CLUES[difficulty]
+    else:
+        clues = int(request.args.get('clues', 35))
     puzzle, solution = sudoku_logic.generate_puzzle(clues)
     CURRENT['puzzle'] = puzzle
     CURRENT['solution'] = solution
@@ -31,9 +44,32 @@ def check_solution():
     incorrect = []
     for i in range(sudoku_logic.SIZE):
         for j in range(sudoku_logic.SIZE):
-            if board[i][j] != solution[i][j]:
+            if board[i][j] != sudoku_logic.EMPTY and board[i][j] != solution[i][j]:
                 incorrect.append([i, j])
-    return jsonify({'incorrect': incorrect})
+    return jsonify({
+        'incorrect': incorrect,
+        'solved': sudoku_logic.is_complete(board, solution),
+    })
+
+
+@app.route('/hint', methods=['POST'])
+def hint():
+    data = request.json or {}
+    puzzle = CURRENT.get('puzzle')
+    solution = CURRENT.get('solution')
+    if puzzle is None or solution is None:
+        return jsonify({'error': 'No game in progress'}), 400
+
+    row = data.get('row')
+    col = data.get('col')
+    if not isinstance(row, int) or not isinstance(col, int):
+        return jsonify({'error': 'Invalid cell'}), 400
+    if not 0 <= row < sudoku_logic.SIZE or not 0 <= col < sudoku_logic.SIZE:
+        return jsonify({'error': 'Invalid cell'}), 400
+    if puzzle[row][col] != sudoku_logic.EMPTY:
+        return jsonify({'error': 'Cell is already filled'}), 400
+
+    return jsonify({'row': row, 'col': col, 'value': solution[row][col], 'locked': True})
 
 if __name__ == '__main__':
     app.run(debug=True)
